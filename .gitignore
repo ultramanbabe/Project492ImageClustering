@@ -3,3 +3,4 @@
 /new_test_images
 /dbscan_clustered_images
 /venv
+vgg16_model.keras
