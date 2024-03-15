@@ -1,17 +1,13 @@
-from sklearn.cluster import DBSCAN
-from keras.applications.vgg16 import VGG16, preprocess_input
+from keras.models import load_model
+from keras.applications.vgg16 import preprocess_input
 from keras.preprocessing import image
-from keras.models import Model
+from sklearn.cluster import DBSCAN
 import numpy as np
 import os
-import tensorflow as tf
 import shutil
 
-#print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
-# Load VGG16 model
-base_model = VGG16(weights='imagenet')
-model = Model(inputs=base_model.input, outputs=base_model.get_layer('fc1').output)
+# Load the saved model
+model = load_model('vgg16_model.keras')
 
 def extract_features(img_path):
     try:
