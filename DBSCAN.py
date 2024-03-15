@@ -53,3 +53,6 @@ for img_path, cluster in zip(image_paths, clusters):
     os.makedirs(cluster_dir, exist_ok=True)
     # Copy the image to the cluster directory
     shutil.copy(img_path, cluster_dir)
+
+# Save the VGG16 model
+model.save('vgg16_model.h5')    
