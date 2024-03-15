@@ -55,4 +55,4 @@ for img_path, cluster in zip(image_paths, clusters):
     shutil.copy(img_path, cluster_dir)
 
 # Save the VGG16 model
-model.save('vgg16_model.h5')    
+model.save('vgg16_model.keras')    
