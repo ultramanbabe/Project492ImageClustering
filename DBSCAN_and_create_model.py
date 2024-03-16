@@ -46,13 +46,17 @@ dbscan = DBSCAN(eps=130, min_samples=2)
 clusters = dbscan.fit_predict(np.array(all_features))
 
 # Copy images to output directory
+# for img_path, cluster in zip(image_paths, clusters):
+#     print(f'{img_path} is in cluster {cluster}')
+#     # Create a directory for the cluster if it doesn't exist
+#     cluster_dir = os.path.join(output_dir, str(cluster))
+#     os.makedirs(cluster_dir, exist_ok=True)
+#     # Copy the image to the cluster directory
+#     shutil.copy(img_path, cluster_dir)
+
+# Print the cluster assignment for each image
 for img_path, cluster in zip(image_paths, clusters):
     print(f'{img_path} is in cluster {cluster}')
-    # Create a directory for the cluster if it doesn't exist
-    cluster_dir = os.path.join(output_dir, str(cluster))
-    os.makedirs(cluster_dir, exist_ok=True)
-    # Copy the image to the cluster directory
-    shutil.copy(img_path, cluster_dir)
 
 # Save the VGG16 model
 model.save('vgg16_model.keras')    
