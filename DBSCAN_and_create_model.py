@@ -29,7 +29,7 @@ def extract_features(img_path):
 dir_path = 'F:/Project492/test_images/'
 
 # Output directory for clustered images
-output_dir = 'F:/Project492/dbscan_clustered_images/'
+# output_dir = 'F:/Project492/dbscan_clustered_images/'
 
 # Extract features for all images
 all_features = []

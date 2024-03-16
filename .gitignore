@@ -1,6 +1,6 @@
 /Images
 /Images_Backup
-/K-mean test output
+/old_algorithms/K-mean test output/*
 /new_test_images
 /dbscan_clustered_images
 /venv
