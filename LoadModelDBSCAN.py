@@ -22,7 +22,7 @@ def extract_features(img_path):
         return None
 
 # Directory containing images
-dir_path = 'F:/Project492/test_images/'
+dir_path = 'F:/Project492/Images_backup/15-02-2024'
 
 # Output directory for clustered images
 output_dir = 'F:/Project492/dbscan_clustered_images/'
