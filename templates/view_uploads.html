@@ -15,10 +15,10 @@
     <a href="{{ url_for('homepage') }}">Return to Homepage</a>
 
     {% for folder, image_paths in images.items() %}
-        <h2>{{ folder }}</h2>
-        {% for image_path in image_paths %}
-            <a href="{{ url_for('static', filename=image_path) }}" target="_blank">
-                <img src="{{ url_for('static', filename=image_path) }}" alt="Uploaded image">
+        <h2>{{ folder }}</h2>  
+        {% for path in image_paths %}
+            <a href="{{ path }}" target="_blank">
+                <img src="{{ path }}" alt="Uploaded image">
             </a>
         {% endfor %}
     {% endfor %}

@@ -6,6 +6,12 @@ import numpy as np
 import os
 import shutil
 
+# Directory containing images
+dir_path = 'F:/Project492/test_images/'
+
+# Output directory for clustered images
+output_dir = 'F:/Project492/static/clustered_images'
+
 # Load the saved model
 model = load_model('vgg16_model.keras')
 
@@ -20,12 +26,6 @@ def extract_features(img_path):
     except Exception as e:
         print(f"Error processing image {img_path}: {e}")
         return None
-
-# Directory containing images
-dir_path = 'F:/Project492/test_images/'
-
-# Output directory for clustered images
-output_dir = 'F:/Project492/static/clustered_images'
 
 # Extract features for all images
 all_features = []

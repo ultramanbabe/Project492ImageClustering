@@ -2,48 +2,87 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 import shutil
 from werkzeug.utils import secure_filename
+import datetime
+from pymongo import MongoClient
+
+client = MongoClient('localhost', 27017)    # Connect to the MongoDB server
+db = client['images']    # Create a database called image_cluster
 
 app = Flask(__name__)
-# dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'uploads')
-# os.makedirs(dir_path, exist_ok=True)
-
 
 @app.route('/homepage')
 def homepage():
     return render_template('homepage.html')
 
+# @app.route('/', methods=['GET', 'POST'])
+# def upload_file():
+#     if request.method == 'POST':
+#         # Get the name of the uploaded folder
+#         uploaded_folder = request.files['file'].filename.split('/')[0]
+
+#         # Create a new directory with the same name as the uploaded folder
+#         upload_path = os.path.join('static', 'uploads', secure_filename(uploaded_folder))
+#         os.makedirs(upload_path, exist_ok=True)
+
+#         # Save all files in the new directory
+#         for file in request.files.getlist('file'):
+#             if file and file.filename.endswith('.jpg'):
+#                 file.save(os.path.join(upload_path, secure_filename(file.filename)))
+
+#     return render_template('upload.html')
+
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        # Get the name of the uploaded folder
-        uploaded_folder = request.files['file'].filename.split('/')[0]
-
-        # Create a new directory with the same name as the uploaded folder
-        upload_path = os.path.join('static', 'uploads', secure_filename(uploaded_folder))
-        os.makedirs(upload_path, exist_ok=True)
-
-        # Save all files in the new directory
+        images = db['images']
         for file in request.files.getlist('file'):
             if file and file.filename.endswith('.jpg'):
-                file.save(os.path.join(upload_path, secure_filename(file.filename)))
+                # Get the name of the uploaded folder
+                uploaded_folder = os.path.dirname(file.filename)
 
+                # Create a new directory with the same name as the uploaded folder
+                upload_path = os.path.join('static', 'uploads', secure_filename(uploaded_folder))
+                os.makedirs(upload_path, exist_ok=True)
+
+                # Save the file in the new directory
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(upload_path, filename))
+
+                # Insert the image path and upload time into MongoDB
+                images.insert_one({'path': os.path.join(upload_path, filename), 'upload_time': datetime.datetime.now()})
     return render_template('upload.html')
+
+# @app.route('/view_uploads')
+# def view_uploads():
+#     # Get a list of the uploaded directories
+#     uploads = os.listdir(os.path.join('static', 'uploads'))
+
+#     # Get a dictionary where the keys are the folder names and the values are the image file paths
+#     images = {}
+#     for upload in uploads:
+#         images[upload] = []
+#         for filename in os.listdir(os.path.join('static', 'uploads', upload).replace('\\', '/')): 
+#             if filename.endswith('.jpg') or filename.endswith('.png'):
+#                 images[upload].append(os.path.join('uploads', upload, filename).replace('\\', '/'))
+#                 #replace('\\', '/') is used to replace the backslash with forward slash in the file path to avoid path conflict in windows
+#     # Render the view_uploads template and pass the images dictionary to it
+#     return render_template('view_uploads.html', images=images)
+
 
 @app.route('/view_uploads')
 def view_uploads():
-    # Get a list of the uploaded directories
-    uploads = os.listdir(os.path.join('static', 'uploads'))
-
-    # Get a dictionary where the keys are the folder names and the values are the image file paths
-    images = {}
-    for upload in uploads:
-        images[upload] = []
-        for filename in os.listdir(os.path.join('static', 'uploads', upload).replace('\\', '/')): 
-            if filename.endswith('.jpg') or filename.endswith('.png'):
-                images[upload].append(os.path.join('uploads', upload, filename).replace('\\', '/'))
-                #replace('\\', '/') is used to replace the backslash with forward slash in the file path to avoid path conflict in windows
-    # Render the view_uploads template and pass the images dictionary to it
-    return render_template('view_uploads.html', images=images)
+    images = db['images']
+    image_data = images.find({})
+    
+    # Create a dictionary where the keys are the folder names and the values are the image file paths
+    images_dict = {}
+    for image in image_data:
+        folder_name = os.path.dirname(image['path']).split('/')[-1]
+        if folder_name not in images_dict:
+            images_dict[folder_name] = []
+        images_dict[folder_name].append(image['path'])
+    
+    return render_template('view_uploads.html', images=images_dict)
 
 @app.route('/choose_model')
 def choose_model():
