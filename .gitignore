@@ -2,6 +2,5 @@
 /Images_Backup
 /old_algorithms/K-mean test output/*
 /new_test_images
-/dbscan_clustered_images
 /venv
 vgg16_model.keras
