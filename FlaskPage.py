@@ -12,21 +12,6 @@ app = Flask(__name__)
 def homepage():
     return render_template('homepage.html')
 
-# @app.route('/', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         for file in request.files.getlist('file'):
-#             if file and file.filename.endswith('.jpg'):
-#                 # Create a new directory for the uploaded file
-#                 dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static', 'uploads')
-#                 new_dir_path = os.path.join(dir_path, secure_filename(os.path.basename(file.filename)))
-#                 os.makedirs(new_dir_path, exist_ok=True)
-
-#                 # Save the file in the new directory
-#                 file.save(os.path.join(new_dir_path, secure_filename(os.path.basename(file.filename))))
-#         return redirect(url_for('manage_clusters'))
-#     return render_template('upload.html')
-
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -85,14 +70,19 @@ def manage_clusters():
 
         elif action == 'rename':
             # Rename cluster
-            new_name = request.form.get('new_name')
-            os.rename(os.path.join('static', 'clustered_images', cluster_id),
-                      os.path.join('static', 'clustered_images', new_name))
+            new_name = request.form.get('new_cluster_id')
+            if new_name is not None:
+                old_path = os.path.join('static', 'clustered_images', cluster_id)
+                new_path = os.path.join('static', 'clustered_images', new_name)
+                if os.path.exists(old_path):
+                    os.rename(old_path, new_path)
+            
+    clusters = os.listdir(os.path.join('static', 'clustered_images').replace('\\', '/'))
 
-    return render_template('manage_clusters.html')
+    return render_template('manage_clusters.html', clusters=clusters)
 
 @app.route('/summary')
 def summary():
     return render_template('summary')
 
-app.run(debug=True)
+app.run(debug=True, port=5000)
