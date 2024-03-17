@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Uploads</title>
+</head>
+<body>
+    <h1>Uploaded Images</h1>
+
+    {% for image_path in image_paths %}
+        <img src="{{ url_for('static', filename=image_path) }}" alt="Uploaded image">
+    {% endfor %}
+
+    <a href="{{ url_for('homepage') }}">Return to Homepage</a>
+</body>
+</html>
