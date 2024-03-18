@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Summary</title>
+    <style>
+        .image-container {
+            display: inline-block;
+            margin-right: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Summary</h1>
+
+    <a href="{{ url_for('homepage') }}">Return to Homepage</a>
+
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Layouts</th>
+            <th>Example</th>
+        </tr>
+        {% for date, count in subfolders_per_day.items() %}
+            <tr>
+                <td>{{ date }}</td>
+                <td>{{ count }}</td>
+                <td>
+                    {% for image_path in example_images_per_day[date] %}
+                        <div class="image-container">
+                            <img src="{{ url_for('static', filename=image_path) }}" width="100">
+                            <p>{{ image_path.split('-')[-1].split('.')[0][:2] + ':' + image_path.split('-')[-1].split('.')[0][2:] }}</p>
+                        </div>
+                    {% endfor %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

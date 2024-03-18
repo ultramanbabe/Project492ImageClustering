@@ -5,6 +5,8 @@ from werkzeug.utils import secure_filename
 import datetime
 from pymongo import MongoClient
 from Clustering_using_Model import cluster_images
+from collections import defaultdict
+from datetime import datetime
 
 
 client = MongoClient('localhost', 27017)    # Connect to the MongoDB server
@@ -39,7 +41,7 @@ def upload_file():
                 file.save(file_path)
 
                 # Insert the image path and upload time into MongoDB
-                images.insert_one({'path': file_path, 'upload_time': datetime.datetime.now()})
+                images.insert_one({'path': file_path, 'upload_time': datetime.now()})
 
     # Get a list of the uploaded directories
     uploads = os.listdir(os.path.join('static', 'uploads'))
@@ -110,17 +112,6 @@ def create_cluster(folder_name):
         shutil.rmtree(os.path.join('static', 'uploads', folder_name))
 
     return redirect(url_for('upload_file'))
-
-
-# @app.route('/cluster/<cluster_id>')
-# def view_cluster(cluster_id):
-#     # Get a list of all subfolders and their images in the cluster
-#     cluster_dir = os.path.join('static', 'clustered_images', cluster_id)
-#     subfolders = [d for d in os.listdir(cluster_dir) if os.path.isdir(os.path.join(cluster_dir, d))]
-#     subfolder_images = {subfolder: os.listdir(os.path.join(cluster_dir, subfolder)) for subfolder in subfolders}
-
-#     # Render a template and pass the list of subfolders and their images to it
-#     return render_template('view_cluster.html', cluster_id=cluster_id, subfolder_images=subfolder_images)
 
 
 @app.route('/cluster/<path:cluster_id>')
@@ -219,6 +210,44 @@ def rename_subfolder(subfolder_path, new_subfolder_name):
 
 @app.route('/summary')
 def summary():
-    return render_template('summary')
+    # Get the path to the clustered_images directory
+    clustered_images_path = 'static/clustered_images'
+
+    # Initialize a dictionary to store the number of subfolders created each day
+    subfolders_per_day = defaultdict(int)
+
+    # Initialize a dictionary to store some image paths for each day
+    example_images_per_day = defaultdict(list)
+
+    # Iterate over all clusters
+    for cluster_id in os.listdir(clustered_images_path):
+        cluster_path = os.path.join(clustered_images_path, cluster_id)
+
+        # Convert the cluster ID to a date
+        taken_date = datetime.strptime(cluster_id, '%d-%m-%Y').date()
+
+        # Iterate over all subfolders in the cluster
+        for subfolder in os.listdir(cluster_path):
+            subfolder_path = os.path.join(cluster_path, subfolder)
+
+            # Increment the count of subfolders created on this date
+            subfolders_per_day[taken_date] += 1
+
+            # Get some image paths from the subfolder
+            image_paths = [os.path.join('clustered_images', cluster_id, subfolder, image).replace('\\', '/') for image in os.listdir(subfolder_path)[:5]]
+            example_images_per_day[taken_date].extend(image_paths)
+
+    # Sort the dictionaries by date
+    subfolders_per_day = dict(sorted(subfolders_per_day.items()))
+
+    # Sort the images in each day by time
+    for date, images in example_images_per_day.items():
+        example_images_per_day[date] = sorted(images, key=lambda image: image.split('-')[-1].split('.')[0])
+
+    # Render the summary template
+    return render_template('summary.html', subfolders_per_day=subfolders_per_day, example_images_per_day=example_images_per_day)
+
+
+
 
 app.run(debug=True, port=5000)
