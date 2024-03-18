@@ -4,12 +4,16 @@ import shutil
 from werkzeug.utils import secure_filename
 import datetime
 from pymongo import MongoClient
+from Clustering_using_Model import cluster_images
+
 
 client = MongoClient('localhost', 27017)    # Connect to the MongoDB server
-db = client['images']    # Create a database called image_cluster
+db = client['images']    # Create a database called images
 images = db['images']
+clustered_images = db['clustered_images']
 
 app = Flask(__name__)
+
 
 @app.route('/homepage')
 def homepage():
@@ -20,9 +24,6 @@ def homepage():
 def upload_file():
     if request.method == 'POST':
         for file in request.files.getlist('file'):
-            # client = MongoClient('localhost', 27017)    # Connect to the MongoDB server
-            # db = client['images']    # Create a database called image_cluster
-            # images = db['images']    # Create a collection called images
 
             if file and file.filename.endswith('.jpg'):
                 # Get the name of the uploaded folder
@@ -33,12 +34,14 @@ def upload_file():
                 os.makedirs(upload_path, exist_ok=True)
 
                 # Save the file in the new directory
-                filename = secure_filename(file.filename)
+                filename = secure_filename(os.path.basename(file.filename))
                 file_path = os.path.join(upload_path, filename)
                 file.save(file_path)
 
                 # Insert the image path and upload time into MongoDB
                 images.insert_one({'path': file_path, 'upload_time': datetime.datetime.now()})
+
+    # Rest of your code...
 
     # Get a list of the uploaded directories
     uploads = os.listdir(os.path.join('static', 'uploads'))
@@ -51,8 +54,11 @@ def upload_file():
             if filename.endswith('.jpg') or filename.endswith('.png'):
                 # Include only the part of the path that comes after 'static/uploads/'
                 images_dict[upload].append(os.path.join(upload, filename).replace('\\', '/'))
+    
 
     return render_template('upload.html', images=images_dict)
+
+
 
 @app.route('/delete_folder/<folder_name>', methods=['POST'])
 def delete_folder(folder_name):
@@ -64,20 +70,20 @@ def delete_folder(folder_name):
         images.delete_many({'path': {'$regex': '^' + escaped_folder_path}})
     return redirect(url_for('upload_file'))
 
-@app.route('/view_uploads')
-def view_uploads():
-    images = db['images']
-    image_data = images.find({})
-    
-    # Create a dictionary where the keys are the folder names and the values are the image file paths
-    images_dict = {}
-    for image in image_data:
-        folder_name = os.path.dirname(image['path']).split('/')[-1]
-        if folder_name not in images_dict:
-            images_dict[folder_name] = []
-        images_dict[folder_name].append(image['path'])
-    
-    return render_template('view_uploads.html', images=images_dict)
+
+@app.route('/create_cluster/<folder_name>', methods=['POST'])
+def create_cluster(folder_name):
+    # Cluster the images using the model 
+    cluster_images(folder_name)
+
+    # Check if there are already clustered images for the folder
+    clustered_folder_path = os.path.join('static', 'clustered_images', folder_name)
+    if os.path.exists(clustered_folder_path):
+        # Remove the original folder
+        shutil.rmtree(os.path.join('static', 'uploads', folder_name))
+
+    return redirect(url_for('upload_file'))
+
 
 @app.route('/manage_clusters', methods=['GET', 'POST'])
 def manage_clusters():
@@ -110,6 +116,7 @@ def manage_clusters():
     clusters = os.listdir(os.path.join('static', 'clustered_images').replace('\\', '/'))
 
     return render_template('manage_clusters.html', clusters=clusters)
+
 
 @app.route('/summary')
 def summary():

@@ -21,17 +21,20 @@
             max-height: 200px;
         }
     </style>
+
     {% for folder, image_paths in images.items() %}
-        <h3>{{ folder }}
-        <form method="POST" action="{{ url_for('delete_folder', folder_name=folder) }}">
-            <input type="submit" value="Delete">
-        </form></h3>
-        {% for path in image_paths %}
-            <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">
-                <img src="{{ url_for('static', filename='uploads/' + path) }}" alt="Uploaded image">
-            </a>
-        {% endfor %}
-        
+    <h3>{{ folder }}
+    <form method="POST" action="{{ url_for('create_cluster', folder_name=folder) }}" style="display: inline;">
+        <input type="submit" value="Create Cluster">
+    </form>
+    <form method="POST" action="{{ url_for('delete_folder', folder_name=folder) }}" style="display: inline;">
+        <input type="submit" value="Delete">
+    </form></h3>
+    {% for path in image_paths %}
+        <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">
+            <img src="{{ url_for('static', filename='uploads/' + path) }}" alt="Uploaded image">
+        </a>
+    {% endfor %}
     {% endfor %}
     
 </body>
