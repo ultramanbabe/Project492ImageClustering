@@ -208,6 +208,44 @@ def rename_subfolder(subfolder_path, new_subfolder_name):
     os.rename(subfolder_path, new_subfolder_path)
 
 
+# @app.route('/summary')
+# def summary():
+#     # Get the path to the clustered_images directory
+#     clustered_images_path = 'static/clustered_images'
+
+#     # Initialize a dictionary to store the number of subfolders created each day
+#     subfolders_per_day = defaultdict(int)
+
+#     # Initialize a dictionary to store some image paths for each day
+#     example_images_per_day = defaultdict(list)
+
+#     # Iterate over all clusters
+#     for cluster_id in os.listdir(clustered_images_path):
+#         cluster_path = os.path.join(clustered_images_path, cluster_id)
+
+#         # Convert the cluster ID to a date
+#         taken_date = datetime.strptime(cluster_id, '%d-%m-%Y').date()
+
+#         # Iterate over all subfolders in the cluster
+#         for subfolder in os.listdir(cluster_path):
+#             subfolder_path = os.path.join(cluster_path, subfolder)
+
+#             # Check if subfolder_path is a directory
+#             if os.path.isdir(subfolder_path):
+#                 # Increment the count of subfolders created on this date
+#                 subfolders_per_day[taken_date] += 1
+
+#                 # Get some image paths from the subfolder
+#                 image_paths = [os.path.join('clustered_images', cluster_id, subfolder, image).replace('\\', '/') for image in os.listdir(subfolder_path)[:5]]
+#                 example_images_per_day[taken_date].extend(image_paths)
+
+#     # Sort the dictionaries by date
+#     subfolders_per_day = dict(sorted(subfolders_per_day.items()))
+
+#     # Render the summary template
+#     return render_template('summary.html', subfolders_per_day=subfolders_per_day, example_images_per_day=example_images_per_day)
+    
+
 @app.route('/summary')
 def summary():
     # Get the path to the clustered_images directory

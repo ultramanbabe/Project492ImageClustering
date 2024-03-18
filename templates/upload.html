@@ -4,31 +4,79 @@
     <title>Upload File</title>
 </head>
 <body>
-    <h1>Upload File</h1>
 
-    <a href="{{ url_for('homepage') }}">Return to Homepage</a>
-
-    <form method="POST" enctype="multipart/form-data">
-        <label for="file">Choose a directory:</label>
-        <input type="file" id="file" name="file" webkitdirectory required>
-        <input type="submit" value="Upload">
-    </form>
-
-    <h2>Uploaded Images</h2>
     <style>
+        body {
+            font-family: Arial;
+            background-color: white;
+            padding-left: 50px;
+        }
+        .centered-text {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h3 {
+            font-size: 30px;
+            
+        }
         img {
             max-width: 200px;
             max-height: 200px;
         }
+        
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 20px;
+            color: white;
+            background-color: rgb(75, 120, 255);
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .homepage-button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-bottom: 5px;
+        font-size: 30px;
+        color: white;
+        background-color: rgb(157, 0, 255);
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+        }
+    
+        
     </style>
 
+
+    <h1>Upload File</h1>
+
+    <a href="{{ url_for('homepage') }}" class="homepage-button">Return to Homepage</a>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" id="file" name="file" webkitdirectory required style="display: none;">
+        <label for="file" class="button">Choose a directory</label>
+        <input type="submit" value="Upload" class="button">
+    </form>
+
+    <h2>Uploaded Images</h2>
+    
     {% for folder, image_paths in images.items() %}
     <h3>{{ folder }}
     <form method="POST" action="{{ url_for('create_cluster', folder_name=folder) }}" style="display: inline;">
-        <input type="submit" value="Create Cluster">
+        <input type="submit" value="Create Cluster" class="button">
     </form>
     <form method="POST" action="{{ url_for('delete_folder', folder_name=folder) }}" style="display: inline;">
-        <input type="submit" value="Delete">
+        <input type="submit" value="Delete" class="button">
     </form></h3>
     {% for path in image_paths %}
         <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">
