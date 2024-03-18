@@ -1,54 +1,41 @@
-<!-- <!DOCTYPE html>
-<html>
-<head>
-    <title>View Cluster</title>
-    <style>
-        .image-container {
-            display: flex;
-            flex-wrap: wrap;
-            /* justify-content: space-around; */
-        }
-        .image-container img {
-            margin: 2px;
-        }
-    </style>
-</head>
-<body>
-    <h1>Cluster {{ cluster_id }}</h1>
-
-    <a href="{{ url_for('manage_clusters') }}">Return to Manage Clusters</a>
-
-    {% for subfolder, images in subfolder_images.items() %}
-        <h2>Cluster ID: {{ subfolder }}</h2>
-        <div class="image-container">
-            {% for image in images %}
-                <img src="{{ url_for('static', filename='clustered_images/' + cluster_id + '/' + subfolder + '/' + image) }}" alt="Cluster image" style="width: 100px; height: auto;">
-            {% endfor %}
-        </div>
-    {% endfor %}
-</body>
-</html> -->
-
-
 <!DOCTYPE html>
 <html>
 <head>
     <title>View Clusters</title>
     <style>
+        body {
+            font-family: Arial;
+            color: white;
+            background-color: rgb(31, 31, 31);
+            padding-left: 50px;
+        }
         .image-container {
             display: flex;
             flex-wrap: wrap;
-            /* justify-content: space-around; */
+            transition: transform 0.3s ease;
         }
-        .image-container img {
-            margin: 2px;
+        .image-container img:hover{
+            transform: scale(4);
+        }
+        .back-button {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-bottom: 5px;
+        font-size: 30px;
+        color: white;
+        background-color: rgb(157, 0, 255);
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
     <h1>Clusters of {{ cluster_id }}</h1>
 
-    <a href="{{ url_for('manage_clusters') }}">Return to Manage Clusters</a>
+    <a href="{{ url_for('manage_clusters') }}" class="back-button">Return to Manage Clusters</a>
 
     {% for subfolder, images in subfolder_images.items() %}
         <h3>Cluster type: {{ subfolder }}</h3>

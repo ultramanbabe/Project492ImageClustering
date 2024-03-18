@@ -5,7 +5,8 @@
     <style>
         body {
             font-family: Arial;
-            background-color: white;
+            color: white;
+            background-color: rgb(31, 31, 31);
             padding-left: 50px;
         }
         .image-container {
@@ -61,7 +62,7 @@
                 <td>
                     {% for image_path in example_images_per_day[date] %}
                         <div class="image-container">
-                            <img src="{{ url_for('static', filename=image_path) }}" width="100">
+                            <img src="{{ url_for('static', filename=image_path) }}" width="130">
                             <p>{{ image_path.split('-')[-1].split('.')[0][:2] + ':' + image_path.split('-')[-1].split('.')[0][2:] }}</p>
                         </div>
                     {% endfor %}
