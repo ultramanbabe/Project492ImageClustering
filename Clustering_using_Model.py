@@ -103,4 +103,4 @@ def cluster_images(input_folder):
         os.makedirs(cluster_dir, exist_ok=True)
         # Move the image to the cluster directory
         shutil.copy(img_path, os.path.join(cluster_dir, os.path.basename(img_path)))
-        # shutil.copy(img_path, cluster_dir)
+        
