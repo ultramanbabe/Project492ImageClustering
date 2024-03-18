@@ -6,12 +6,33 @@
 <body>
     <h1>Upload File</h1>
 
+    <a href="{{ url_for('homepage') }}">Return to Homepage</a>
+
     <form method="POST" enctype="multipart/form-data">
         <label for="file">Choose a directory:</label>
         <input type="file" id="file" name="file" webkitdirectory required>
         <input type="submit" value="Upload">
     </form>
 
-    <a href="{{ url_for('homepage') }}">Return to Homepage</a>
+    <h2>Uploaded Images</h2>
+    <style>
+        img {
+            max-width: 200px;
+            max-height: 200px;
+        }
+    </style>
+    {% for folder, image_paths in images.items() %}
+        <h3>{{ folder }}
+        <form method="POST" action="{{ url_for('delete_folder', folder_name=folder) }}">
+            <input type="submit" value="Delete">
+        </form></h3>
+        {% for path in image_paths %}
+            <a href="{{ url_for('static', filename='uploads/' + path) }}" target="_blank">
+                <img src="{{ url_for('static', filename='uploads/' + path) }}" alt="Uploaded image">
+            </a>
+        {% endfor %}
+        
+    {% endfor %}
+    
 </body>
 </html>

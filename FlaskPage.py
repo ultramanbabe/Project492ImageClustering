@@ -7,6 +7,7 @@ from pymongo import MongoClient
 
 client = MongoClient('localhost', 27017)    # Connect to the MongoDB server
 db = client['images']    # Create a database called image_cluster
+images = db['images']
 
 app = Flask(__name__)
 
@@ -14,28 +15,15 @@ app = Flask(__name__)
 def homepage():
     return render_template('homepage.html')
 
-# @app.route('/', methods=['GET', 'POST'])
-# def upload_file():
-#     if request.method == 'POST':
-#         # Get the name of the uploaded folder
-#         uploaded_folder = request.files['file'].filename.split('/')[0]
-
-#         # Create a new directory with the same name as the uploaded folder
-#         upload_path = os.path.join('static', 'uploads', secure_filename(uploaded_folder))
-#         os.makedirs(upload_path, exist_ok=True)
-
-#         # Save all files in the new directory
-#         for file in request.files.getlist('file'):
-#             if file and file.filename.endswith('.jpg'):
-#                 file.save(os.path.join(upload_path, secure_filename(file.filename)))
-
-#     return render_template('upload.html')
 
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        images = db['images']
         for file in request.files.getlist('file'):
+            # client = MongoClient('localhost', 27017)    # Connect to the MongoDB server
+            # db = client['images']    # Create a database called image_cluster
+            # images = db['images']    # Create a collection called images
+
             if file and file.filename.endswith('.jpg'):
                 # Get the name of the uploaded folder
                 uploaded_folder = os.path.dirname(file.filename)
@@ -46,28 +34,35 @@ def upload_file():
 
                 # Save the file in the new directory
                 filename = secure_filename(file.filename)
-                file.save(os.path.join(upload_path, filename))
+                file_path = os.path.join(upload_path, filename)
+                file.save(file_path)
 
                 # Insert the image path and upload time into MongoDB
-                images.insert_one({'path': os.path.join(upload_path, filename), 'upload_time': datetime.datetime.now()})
-    return render_template('upload.html')
+                images.insert_one({'path': file_path, 'upload_time': datetime.datetime.now()})
 
-# @app.route('/view_uploads')
-# def view_uploads():
-#     # Get a list of the uploaded directories
-#     uploads = os.listdir(os.path.join('static', 'uploads'))
+    # Get a list of the uploaded directories
+    uploads = os.listdir(os.path.join('static', 'uploads'))
 
-#     # Get a dictionary where the keys are the folder names and the values are the image file paths
-#     images = {}
-#     for upload in uploads:
-#         images[upload] = []
-#         for filename in os.listdir(os.path.join('static', 'uploads', upload).replace('\\', '/')): 
-#             if filename.endswith('.jpg') or filename.endswith('.png'):
-#                 images[upload].append(os.path.join('uploads', upload, filename).replace('\\', '/'))
-#                 #replace('\\', '/') is used to replace the backslash with forward slash in the file path to avoid path conflict in windows
-#     # Render the view_uploads template and pass the images dictionary to it
-#     return render_template('view_uploads.html', images=images)
+    # Get a dictionary where the keys are the folder names and the values are the image file paths
+    images_dict = {}
+    for upload in uploads:
+        images_dict[upload] = []
+        for filename in os.listdir(os.path.join('static', 'uploads', upload).replace('\\', '/')): 
+            if filename.endswith('.jpg') or filename.endswith('.png'):
+                # Include only the part of the path that comes after 'static/uploads/'
+                images_dict[upload].append(os.path.join(upload, filename).replace('\\', '/'))
 
+    return render_template('upload.html', images=images_dict)
+
+@app.route('/delete_folder/<folder_name>', methods=['POST'])
+def delete_folder(folder_name):
+    folder_path = os.path.join('static', 'uploads', folder_name)
+    if os.path.exists(folder_path):
+        shutil.rmtree(folder_path)
+        # Delete the documents from MongoDB
+        escaped_folder_path = folder_path.replace('\\', '\\\\')
+        images.delete_many({'path': {'$regex': '^' + escaped_folder_path}})
+    return redirect(url_for('upload_file'))
 
 @app.route('/view_uploads')
 def view_uploads():
@@ -83,10 +78,6 @@ def view_uploads():
         images_dict[folder_name].append(image['path'])
     
     return render_template('view_uploads.html', images=images_dict)
-
-@app.route('/choose_model')
-def choose_model():
-    return render_template('choose_model.html')
 
 @app.route('/manage_clusters', methods=['GET', 'POST'])
 def manage_clusters():
