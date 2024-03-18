@@ -41,8 +41,6 @@ def upload_file():
                 # Insert the image path and upload time into MongoDB
                 images.insert_one({'path': file_path, 'upload_time': datetime.datetime.now()})
 
-    # Rest of your code...
-
     # Get a list of the uploaded directories
     uploads = os.listdir(os.path.join('static', 'uploads'))
 
@@ -55,9 +53,22 @@ def upload_file():
                 # Include only the part of the path that comes after 'static/uploads/'
                 images_dict[upload].append(os.path.join(upload, filename).replace('\\', '/'))
     
-
     return render_template('upload.html', images=images_dict)
 
+
+@app.route('/delete_cluster', methods=['POST'])
+def delete_cluster():
+    # Get the cluster ID from the form data
+    cluster_id = request.form.get('cluster_id')
+
+    # Construct the path to the cluster
+    cluster_path = os.path.join('static', 'clustered_images', cluster_id)
+
+    # Delete the cluster
+    shutil.rmtree(cluster_path)
+
+    # Redirect the user back to the manage_clusters page
+    return redirect(url_for('manage_clusters'))
 
 
 @app.route('/delete_folder/<folder_name>', methods=['POST'])
@@ -69,6 +80,22 @@ def delete_folder(folder_name):
         escaped_folder_path = folder_path.replace('\\', '\\\\')
         images.delete_many({'path': {'$regex': '^' + escaped_folder_path}})
     return redirect(url_for('upload_file'))
+
+
+@app.route('/delete_subfolder', methods=['POST'])
+def delete_subfolder():
+    # Get the cluster ID and the subfolder name from the form data
+    cluster_id = request.form.get('cluster_id')
+    subfolder = request.form.get('subfolder')
+
+    # Construct the path to the subfolder
+    subfolder_path = os.path.join('static', 'clustered_images', cluster_id, subfolder)
+
+    # Delete the subfolder
+    shutil.rmtree(subfolder_path)
+
+    # Redirect the user back to the view_cluster page
+    return redirect(url_for('view_cluster', cluster_id=cluster_id))
 
 
 @app.route('/create_cluster/<folder_name>', methods=['POST'])
@@ -83,6 +110,28 @@ def create_cluster(folder_name):
         shutil.rmtree(os.path.join('static', 'uploads', folder_name))
 
     return redirect(url_for('upload_file'))
+
+
+# @app.route('/cluster/<cluster_id>')
+# def view_cluster(cluster_id):
+#     # Get a list of all subfolders and their images in the cluster
+#     cluster_dir = os.path.join('static', 'clustered_images', cluster_id)
+#     subfolders = [d for d in os.listdir(cluster_dir) if os.path.isdir(os.path.join(cluster_dir, d))]
+#     subfolder_images = {subfolder: os.listdir(os.path.join(cluster_dir, subfolder)) for subfolder in subfolders}
+
+#     # Render a template and pass the list of subfolders and their images to it
+#     return render_template('view_cluster.html', cluster_id=cluster_id, subfolder_images=subfolder_images)
+
+
+@app.route('/cluster/<path:cluster_id>')
+def view_cluster(cluster_id):
+    # Get a list of all subfolders and their images in the cluster
+    cluster_dir = os.path.join('static', 'clustered_images', cluster_id)
+    subfolders = [d for d in os.listdir(cluster_dir) if os.path.isdir(os.path.join(cluster_dir, d))]
+    subfolder_images = {subfolder: os.listdir(os.path.join(cluster_dir, subfolder)) for subfolder in subfolders}
+
+    # Render a template and pass the list of subfolders and their images to it
+    return render_template('view_cluster.html', cluster_id=cluster_id, subfolder_images=subfolder_images)
 
 
 @app.route('/manage_clusters', methods=['GET', 'POST'])
@@ -113,9 +162,59 @@ def manage_clusters():
                 if os.path.exists(old_path):
                     os.rename(old_path, new_path)
             
-    clusters = os.listdir(os.path.join('static', 'clustered_images').replace('\\', '/'))
+    # clusters = os.listdir(os.path.join('static', 'clustered_images'))
+    cluster_ids = os.listdir(os.path.join('static', 'clustered_images'))
 
-    return render_template('manage_clusters.html', clusters=clusters)
+    return render_template('manage_clusters.html', cluster_ids=cluster_ids)
+
+
+@app.route('/manage_subfolder', methods=['POST'])
+def manage_subfolder():
+    # Get the action, cluster ID, subfolder name, and input value from the form data
+    action = request.form.get('action')
+    cluster_id = request.form.get('cluster_id')
+    subfolder = request.form.get('subfolder')
+    target_subfolder_name = request.form.get('cluster_id_input')
+
+    # Construct the path to the subfolder
+    subfolder_path = os.path.join('static', 'clustered_images', cluster_id, subfolder)
+
+    if action == 'delete':
+        # Delete the subfolder
+        shutil.rmtree(subfolder_path)
+    elif action == 'merge':
+        # Merge the subfolder with another subfolder
+        merge_subfolder(cluster_id, subfolder, target_subfolder_name)
+    elif action == 'rename':
+        # Rename the subfolder
+        rename_subfolder(subfolder_path, target_subfolder_name)
+
+    # Redirect the user back to the view_cluster page
+    return redirect(url_for('view_cluster', cluster_id=cluster_id))
+
+
+def merge_subfolder(cluster_id, source_subfolder_name, target_subfolder_name):
+    # Construct the paths to the source and target subfolders
+    source_subfolder_path = os.path.join('static', 'clustered_images', cluster_id, source_subfolder_name)
+    target_subfolder_path = os.path.join('static', 'clustered_images', cluster_id, target_subfolder_name)
+
+    # Move all files from the source subfolder to the target subfolder
+    for filename in os.listdir(source_subfolder_path):
+        shutil.move(os.path.join(source_subfolder_path, filename), target_subfolder_path)
+
+    # Delete the source subfolder
+    shutil.rmtree(source_subfolder_path)
+
+
+def rename_subfolder(subfolder_path, new_subfolder_name):
+    # Get the parent directory
+    parent_dir = os.path.dirname(subfolder_path)
+
+    # Construct the path to the new subfolder
+    new_subfolder_path = os.path.join(parent_dir, new_subfolder_name)
+
+    # Rename the subfolder
+    os.rename(subfolder_path, new_subfolder_path)
 
 
 @app.route('/summary')

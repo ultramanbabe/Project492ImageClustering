@@ -1,0 +1,80 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <title>View Cluster</title>
+    <style>
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            /* justify-content: space-around; */
+        }
+        .image-container img {
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cluster {{ cluster_id }}</h1>
+
+    <a href="{{ url_for('manage_clusters') }}">Return to Manage Clusters</a>
+
+    {% for subfolder, images in subfolder_images.items() %}
+        <h2>Cluster ID: {{ subfolder }}</h2>
+        <div class="image-container">
+            {% for image in images %}
+                <img src="{{ url_for('static', filename='clustered_images/' + cluster_id + '/' + subfolder + '/' + image) }}" alt="Cluster image" style="width: 100px; height: auto;">
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Clusters</title>
+    <style>
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            /* justify-content: space-around; */
+        }
+        .image-container img {
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clusters of {{ cluster_id }}</h1>
+
+    <a href="{{ url_for('manage_clusters') }}">Return to Manage Clusters</a>
+
+    {% for subfolder, images in subfolder_images.items() %}
+        <h2>Cluster ID: {{ subfolder }}</h2>
+        <form method="POST" action="{{ url_for('manage_subfolder') }}">
+            <label for="action">Action:</label>
+            <select id="action" name="action" required>
+                <option value="delete">Delete</option>
+                <option value="merge">Merge</option>
+                <option value="rename">Rename</option>
+            </select>
+            <br>
+
+            <label for="cluster_id_input">Target Subfolder Name to Merge / New Subfolder Name:</label>
+            <input type="text" id="cluster_id_input" name="cluster_id_input">
+            <br>
+
+            <input type="hidden" id="cluster_id" name="cluster_id" value="{{ cluster_id }}">
+            <input type="hidden" id="subfolder" name="subfolder" value="{{ subfolder }}">
+            <input type="submit" value="Submit"><p>Number of images: {{images|length}}</p>
+        </form>
+        
+        <div class="image-container">
+            {% for image in images %}
+                <img src="{{ url_for('static', filename='clustered_images/' + cluster_id + '/' + subfolder + '/' + image) }}" alt="Cluster image" style="width: 100px; height: auto;">
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+</html>
